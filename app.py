@@ -100,3 +100,66 @@ with right:
             f'<div style="background-color:{color}; color:white; padding:8px; border-radius:4px; margin-bottom:8px;">{label}</div>',
             unsafe_allow_html=True
         )
+
+# === Bottom Explanation Box ===
+st.markdown("---")
+st.subheader("📚 What Each Category Means (with Examples)")
+
+# Use columns for side-by-side boxes
+col1, col2, col3, col4, col5 = st.columns(5)
+
+col1.markdown(
+    f"""
+    <div style="background-color:{colors['Role & Goal']}; padding:12px; border-radius:8px; color:white;">
+    <strong>Role & Goal</strong><br>
+    🗂️ Example: "You are a friendly project coach who helps teams run a premortem."<br>
+    <em>What it does:</em> Tells AI who it is, how to behave, and the main purpose.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+col2.markdown(
+    f"""
+    <div style="background-color:{colors['Steps']}; padding:12px; border-radius:8px; color:white;">
+    <strong>Step by Step</strong><br>
+    📝 Example: "First, ask about their project. Next, guide them through risk points."<br>
+    <em>What it does:</em> Guides AI through the task step-by-step.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+col3.markdown(
+    f"""
+    <div style="background-color:{colors['Pedagogy']}; padding:12px; border-radius:8px; color:white;">
+    <strong>Pedagogy</strong><br>
+    🎓 Example: "Encourage reflection. Use simple explanations."<br>
+    <em>What it does:</em> Gives teaching style or learning guidance.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+col4.markdown(
+    f"""
+    <div style="background-color:{colors['Constraints']}; padding:12px; border-radius:8px; color:white;">
+    <strong>Constraints</strong><br>
+    🚫 Example: "Don't share project secrets. Avoid negativity."<br>
+    <em>What it does:</em> Defines limits and what to avoid.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+col5.markdown(
+    f"""
+    <div style="background-color:{colors['Personalization']}; padding:12px; border-radius:8px; color:white;">
+    <strong>Personalization</strong><br>
+    🎁 Example: "Summarize their plan and wish them good luck."<br>
+    <em>What it does:</em> Tells AI how to wrap up with a personal touch.
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
