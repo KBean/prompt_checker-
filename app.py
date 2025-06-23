@@ -102,17 +102,38 @@ with right:
         )
 
 # === Bottom Explanation Box ===
+# === Bottom Explanation Box with pastel background and equal size ===
 st.markdown("---")
 st.subheader("📚 What Each Category Means (with Examples)")
 
-# Use columns for side-by-side boxes
+# Define pastel colors for readability
+pastel_colors = {
+    "Role & Goal": "#f7c4c4",
+    "Steps": "#c4d7f7",
+    "Pedagogy": "#c4f1f7",
+    "Constraints": "#e1c4f7",
+    "Personalization": "#f1efc4"
+}
+
+# Use columns
 col1, col2, col3, col4, col5 = st.columns(5)
+
+box_style = """
+    padding: 16px;
+    border-radius: 8px;
+    color: #000;
+    width: 100%;
+    min-height: 220px;  /* Adjust height for consistency */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+"""
 
 col1.markdown(
     f"""
-    <div style="background-color:{colors['Role & Goal']}; padding:12px; border-radius:8px; color:white;">
-    <strong>Role & Goal</strong><br>
-    🗂️ Example: "You are a friendly project coach who helps teams run a premortem."<br>
+    <div style="background-color:{pastel_colors['Role & Goal']}; {box_style}">
+    <strong>📂 Role & Goal</strong><br>
+    📌 Example: "You are a friendly project coach who helps teams run a premortem."<br><br>
     <em>What it does:</em> Tells AI who it is, how to behave, and the main purpose.
     </div>
     """,
@@ -121,9 +142,9 @@ col1.markdown(
 
 col2.markdown(
     f"""
-    <div style="background-color:{colors['Steps']}; padding:12px; border-radius:8px; color:white;">
-    <strong>Step by Step</strong><br>
-    📝 Example: "First, ask about their project. Next, guide them through risk points."<br>
+    <div style="background-color:{pastel_colors['Steps']}; {box_style}">
+    <strong>📝 Step by Step</strong><br>
+    📌 Example: "First, ask about their project. Next, guide them through risk points."<br><br>
     <em>What it does:</em> Guides AI through the task step-by-step.
     </div>
     """,
@@ -132,9 +153,9 @@ col2.markdown(
 
 col3.markdown(
     f"""
-    <div style="background-color:{colors['Pedagogy']}; padding:12px; border-radius:8px; color:white;">
-    <strong>Pedagogy</strong><br>
-    🎓 Example: "Encourage reflection. Use simple explanations."<br>
+    <div style="background-color:{pastel_colors['Pedagogy']}; {box_style}">
+    <strong>🎓 Pedagogy</strong><br>
+    📌 Example: "Encourage reflection. Use simple explanations."<br><br>
     <em>What it does:</em> Gives teaching style or learning guidance.
     </div>
     """,
@@ -143,9 +164,9 @@ col3.markdown(
 
 col4.markdown(
     f"""
-    <div style="background-color:{colors['Constraints']}; padding:12px; border-radius:8px; color:white;">
-    <strong>Constraints</strong><br>
-    🚫 Example: "Don't share project secrets. Avoid negativity."<br>
+    <div style="background-color:{pastel_colors['Constraints']}; {box_style}">
+    <strong>🚫 Constraints</strong><br>
+    📌 Example: "Don't share project secrets. Avoid negativity."<br><br>
     <em>What it does:</em> Defines limits and what to avoid.
     </div>
     """,
@@ -154,9 +175,9 @@ col4.markdown(
 
 col5.markdown(
     f"""
-    <div style="background-color:{colors['Personalization']}; padding:12px; border-radius:8px; color:white;">
-    <strong>Personalization</strong><br>
-    🎁 Example: "Summarize their plan and wish them good luck."<br>
+    <div style="background-color:{pastel_colors['Personalization']}; {box_style}">
+    <strong>🎁 Personalization</strong><br>
+    📌 Example: "Summarize their plan and wish them good luck."<br><br>
     <em>What it does:</em> Tells AI how to wrap up with a personal touch.
     </div>
     """,
