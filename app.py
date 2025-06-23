@@ -1,8 +1,12 @@
 import streamlit as st
+import os
 from openai import OpenAI
 
 # === Setup your OpenAI key ===
-client = OpenAI()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+
 
 st.set_page_config(page_title="Prompt Checker", page_icon="✅")
 
