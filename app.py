@@ -3,8 +3,10 @@ import os
 from openai import OpenAI
 import json
 
+# === Setup ===
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# === Color codes ===
 colors = {
     "Role & Goal": "#C70039",
     "Steps": "#0B3C5D",
@@ -13,16 +15,24 @@ colors = {
     "Personalization": "#8B8000"
 }
 
+pastel_colors = {
+    "Role & Goal": "#f7c4c4",
+    "Steps": "#c4d7f7",
+    "Pedagogy": "#c4f1f7",
+    "Constraints": "#e1c4f7",
+    "Personalization": "#f1efc4"
+}
+
+# === Page config ===
 st.set_page_config(page_title="AI Coach Inline Highlighter", page_icon="✅", layout="wide")
-st.title("🔍 AI Coach Prompt Highlighter")
+st.title("🔍 AI Coach Prompt Highlighter — Clean & Smart")
 
 st.markdown("""
 **Paste your raw prompt below.**  
-When you click **Highlight Prompt**, the input will be replaced with your highlighted version — using categories:
-Role & Goal, Steps, Pedagogy, Constraints, Personalization.
+When you click **Highlight Prompt**, the input will be replaced with a color-coded version, with recommendations for missing pieces.
 """)
 
-# === Custom CSS for fixed width ===
+# === Custom CSS ===
 st.markdown("""
     <style>
     .prompt-container {
@@ -38,7 +48,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === Session state to store whether user clicked Highlight ===
+# === Session states ===
 if "show_highlight" not in st.session_state:
     st.session_state.show_highlight = False
 
@@ -66,8 +76,9 @@ with left:
                             "content": (
                                 "You are a prompt highlighter. Break any prompt into phrases or sentences. "
                                 "Tag each with: Role & Goal, Steps, Pedagogy, Constraints, Personalization. "
-                                "If the prompt is unclear, return: [{\"text\":\"Prompt unclear.\", \"label\":\"Uncategorized\"}]. "
-                                "Always return only valid JSON array with double quotes."
+                                "If the prompt is unclear or missing parts, still return a valid JSON array: "
+                                "[{\"text\":\"Prompt unclear.\", \"label\":\"Uncategorized\"}]. "
+                                "Always return only valid JSON with double quotes, no extra text."
                             )
                         },
                         {"role": "user", "content": prompt}
@@ -94,7 +105,7 @@ with left:
                 st.session_state.show_highlight = True
 
     else:
-        # Show the highlighted version in place of input
+        # === Show highlighted prompt ===
         st.markdown('<div class="highlighted-output">', unsafe_allow_html=True)
         html = ""
         for item in st.session_state.highlighted:
@@ -105,13 +116,43 @@ with left:
         st.markdown(html, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # Optionally allow reset:
+        # === Smart recommendations ===
+        expected_labels = ["Role & Goal", "Steps", "Pedagogy", "Constraints", "Personalization"]
+        found_labels = set(item['label'] for item in st.session_state.highlighted)
+        missing_labels = [label for label in expected_labels if label not in found_labels]
+
+        example_suggestions = {
+            "Role & Goal": "Add a clear role, e.g. 'You are my trusted advisor for this project.'",
+            "Steps": "Add step-by-step tasks, e.g. 'First, ask about my goals, then provide a plan.'",
+            "Pedagogy": "Add a learning style, e.g. 'Explain in simple terms with examples.'",
+            "Constraints": "Add limits, e.g. 'Do not use jargon or recommend paid tools.'",
+            "Personalization": "Add a personal wrap-up, e.g. 'End with a summary tailored to my situation.'"
+        }
+
+        if missing_labels:
+            st.markdown("### 🧩 **Recommendations to Improve This Prompt**")
+            for label in missing_labels:
+                color = colors.get(label, "#ccc")
+                suggestion = example_suggestions.get(label, "Add more detail.")
+                st.markdown(
+                    f"""
+                    <div style="border-left: 8px solid {color}; background-color: #f9f9f9; padding: 8px; margin-bottom: 8px; border-radius: 6px;">
+                    <strong style="color:{color};">{label}</strong>: {suggestion}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+        else:
+            st.success("✅ All categories are well covered!")
+
+        # === Reset button ===
         if st.button("🔄 Start Over"):
             st.session_state.show_highlight = False
             st.session_state.prompt_input = ""
 
     st.markdown('</div>', unsafe_allow_html=True)
 
+# === Right: Color Index ===
 with right:
     st.markdown("### 📌 Index")
     for label, color in colors.items():
@@ -120,17 +161,9 @@ with right:
             unsafe_allow_html=True
         )
 
-# === Bottom Explanation Box with pastel and equal size ===
+# === Bottom Explanation Cards ===
 st.markdown("---")
 st.subheader("📚 What Each Category Means (with Examples)")
-
-pastel_colors = {
-    "Role & Goal": "#f7c4c4",
-    "Steps": "#c4d7f7",
-    "Pedagogy": "#c4f1f7",
-    "Constraints": "#e1c4f7",
-    "Personalization": "#f1efc4"
-}
 
 box_style = """
     padding: 16px;
@@ -200,4 +233,3 @@ col5.markdown(
     """,
     unsafe_allow_html=True
 )
-
