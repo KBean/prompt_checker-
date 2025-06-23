@@ -3,57 +3,59 @@ import os
 from openai import OpenAI
 import json
 
-# === Setup your OpenAI key ===
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# === Color map ===
 colors = {
-    "Role & Goal": "#C70039",         # Red
-    "Steps": "#0B3C5D",               # Dark Blue
-    "Pedagogy": "#0099CC",            # Light Blue
-    "Constraints": "#800080",         # Purple
-    "Personalization": "#8B8000"      # Olive
+    "Role & Goal": "#C70039",
+    "Steps": "#0B3C5D",
+    "Pedagogy": "#0099CC",
+    "Constraints": "#800080",
+    "Personalization": "#8B8000"
 }
 
-# === Streamlit settings ===
 st.set_page_config(page_title="AI Coach Inline Highlighter", page_icon="✅", layout="wide")
 st.title("🔍 AI Coach Prompt Highlighter — Inline with Index")
 
 st.markdown("""
-Paste your **natural prompt** below.  
-The app will **automatically highlight** each part (Role & Goal, Steps, Pedagogy, Constraints, Personalization)  
-**inline** in your original text — and show a color index for easy comparison.
+**Paste your raw prompt below.**  
+This tool auto-highlights each phrase by category (Role & Goal, Steps, Pedagogy, Constraints, Personalization)  
+and shows a color index for quick comparison.
 """)
 
-# === User input ===
 prompt = st.text_area("📋 Paste your prompt here:", height=300)
 
 if st.button("✨ Highlight Prompt"):
     with st.spinner("Analyzing and tagging..."):
-        # === Call OpenAI to tag ===
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {
                     "role": "system",
                     "content": (
-                        "You are a prompt highlighter. For any input prompt, break it into meaningful sentences or phrases. "
-                        "Tag each with one of: Role & Goal, Steps, Pedagogy, Constraints, Personalization. "
-                        "Output JSON: [{'text': '...', 'label': '...'}]."
+                        "You are a prompt highlighter. Break any prompt into meaningful phrases or sentences. "
+                        "For each, tag it as: Role & Goal, Steps, Pedagogy, Constraints, or Personalization. "
+                        "Output ONLY valid JSON array using double quotes, no extra text or explanations. "
+                        "Example: [{\"text\": \"...\", \"label\": \"...\"}]."
                     )
                 },
                 {"role": "user", "content": prompt}
             ]
         )
 
-        # === Parse ===
+        raw = response.choices[0].message.content.strip()
+
+        # Fallback: Extract JSON if wrapped in ```json
+        if "```" in raw:
+            raw = raw.split("```")[1].strip()
+            if raw.lower().startswith("json"):
+                raw = raw.split("\n", 1)[1]
+
         try:
-            tagged = json.loads(response.choices[0].message.content)
+            tagged = json.loads(raw)
         except Exception as e:
-            st.error(f"⚠️ Couldn't parse AI response: {e}")
+            st.error(f"⚠️ Couldn't parse AI JSON. Raw output:\n\n{raw}\n\nError: {e}")
             st.stop()
 
-        # === Layout: prompt with inline colors + side index ===
         col1, col2 = st.columns([4, 1])
 
         with col1:
