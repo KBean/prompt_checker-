@@ -14,63 +14,73 @@ colors = {
 }
 
 st.set_page_config(page_title="AI Coach Inline Highlighter", page_icon="✅", layout="wide")
-st.title("🔍 AI Coach Prompt Highlighter — Inline with Index")
+st.title("🔍 AI Coach Prompt Highlighter — Tidy Layout")
 
 st.markdown("""
 **Paste your raw prompt below.**  
-This tool auto-highlights each phrase by category (Role & Goal, Steps, Pedagogy, Constraints, Personalization)  
-and shows a color index for quick comparison.
+The app auto-highlights each part inline and shows a color index neatly beside it.
 """)
 
-prompt = st.text_area("📋 Paste your prompt here:", height=300)
+# === Use a container with fixed width ===
+container = st.container()
 
-if st.button("✨ Highlight Prompt"):
-    with st.spinner("Analyzing and tagging..."):
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "You are a prompt highlighter. Break any prompt into meaningful phrases or sentences. "
-                        "For each, tag it as: Role & Goal, Steps, Pedagogy, Constraints, or Personalization. "
-                        "Output ONLY valid JSON array using double quotes, no extra text or explanations. "
-                        "Example: [{\"text\": \"...\", \"label\": \"...\"}]."
-                    )
-                },
-                {"role": "user", "content": prompt}
-            ]
-        )
+# === Columns: input + output + index ===
+left, right = st.columns([2, 1])
 
-        raw = response.choices[0].message.content.strip()
+with left:
+    prompt = container.text_area(
+        "📋 Paste your prompt here:",
+        height=200,
+        placeholder="e.g. Please help me write a PPT as a marketing leader",
+    )
 
-        # Fallback: Extract JSON if wrapped in ```json
-        if "```" in raw:
-            raw = raw.split("```")[1].strip()
-            if raw.lower().startswith("json"):
-                raw = raw.split("\n", 1)[1]
+    if st.button("✨ Highlight Prompt"):
+        with st.spinner("Analyzing and tagging..."):
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a prompt highlighter. Break any prompt into sentences or phrases. "
+                            "Tag each as: Role & Goal, Steps, Pedagogy, Constraints, Personalization. "
+                            "Output only valid JSON array with double quotes: "
+                            "[{\"text\": \"...\", \"label\": \"...\"}]."
+                        )
+                    },
+                    {"role": "user", "content": prompt}
+                ]
+            )
 
-        try:
-            tagged = json.loads(raw)
-        except Exception as e:
-            st.error(f"⚠️ Couldn't parse AI JSON. Raw output:\n\n{raw}\n\nError: {e}")
-            st.stop()
+            raw = response.choices[0].message.content.strip()
 
-        col1, col2 = st.columns([4, 1])
+            # Robust JSON extract
+            if "```" in raw:
+                raw = raw.split("```")[1].strip()
+                if raw.lower().startswith("json"):
+                    raw = raw.split("\n", 1)[1]
 
-        with col1:
+            try:
+                tagged = json.loads(raw)
+            except Exception as e:
+                st.error(f"⚠️ Couldn't parse AI JSON. Raw output:\n\n{raw}\n\nError: {e}")
+                st.stop()
+
+            # === Show highlighted prompt ===
             html = ""
             for item in tagged:
                 text = item['text']
                 label = item['label']
                 color = colors.get(label, "#ddd")
                 html += f'<span style="background-color:{color}; padding:2px 4px; border-radius:4px; margin:1px; color:white;">{text} </span>'
+
+            st.markdown("### ✅ Highlighted Prompt")
             st.markdown(html, unsafe_allow_html=True)
 
-        with col2:
-            st.markdown("### 📌 Index")
-            for label, color in colors.items():
-                st.markdown(
-                    f'<div style="background-color:{color}; color:white; padding:6px; border-radius:4px; margin-bottom:6px;">{label}</div>',
-                    unsafe_allow_html=True
-                )
+with right:
+    st.markdown("### 📌 Index")
+    for label, color in colors.items():
+        st.markdown(
+            f'<div style="background-color:{color}; color:white; padding:6px; border-radius:4px; margin-bottom:6px;">{label}</div>',
+            unsafe_allow_html=True
+        )
