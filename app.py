@@ -27,6 +27,13 @@ st.markdown("""
 
 # === OpenAI Setup ===
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+colors = {
+    "Role & Goal": "role",
+    "Steps": "steps",
+    "Pedagogy": "pedagogy",
+    "Constraints": "constraints",
+    "Personalization": "personalization"
+}
 
 st.set_page_config(page_title="AI Coach Prompt Checker", page_icon="✅", layout="wide")
 
