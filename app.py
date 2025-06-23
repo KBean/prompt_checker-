@@ -1,3 +1,30 @@
+# === Custom CSS ===
+st.markdown("""
+    <style>
+    /* Make headings prettier */
+    h1, h2, h3 {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Style for color-coded boxes */
+    .checker-box {
+        border-left: 8px solid #333;
+        background-color: #f9f9f9;
+        padding: 1em;
+        margin-bottom: 1em;
+        border-radius: 8px;
+    }
+
+    /* Color overrides (adjust per your palette) */
+    .role { border-left-color: #C70039; }         /* Red */
+    .steps { border-left-color: #0B3C5D; }        /* Dark Blue */
+    .pedagogy { border-left-color: #0099CC; }     /* Light Blue */
+    .constraints { border-left-color: #800080; }  /* Purple */
+    .personalization { border-left-color: #8B8000; } /* Olive */
+    </style>
+""", unsafe_allow_html=True)
+
+
 import streamlit as st
 import os
 from openai import OpenAI
