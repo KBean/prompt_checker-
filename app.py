@@ -1,3 +1,7 @@
+import streamlit as st
+import os
+from openai import OpenAI
+
 # === Custom CSS ===
 st.markdown("""
     <style>
@@ -24,10 +28,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-import streamlit as st
-import os
-from openai import OpenAI
 
 # Setup
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
