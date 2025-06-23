@@ -123,11 +123,12 @@ box_style = """
     border-radius: 8px;
     color: #000;
     width: 100%;
-    min-height: 220px;  /* Adjust height for consistency */
+    min-height: 240px;  /* same height for all */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 """
+
 
 col1.markdown(
     f"""
