@@ -14,7 +14,7 @@ colors = {
 }
 
 st.set_page_config(page_title="AI Coach Inline Highlighter", page_icon="✅", layout="wide")
-st.title("🔍 AI Coach Prompt Highlighter — Clean & Fixed Width")
+st.title("🔍 AI Coach Prompt Highlighter")
 
 st.markdown("""
 **Paste your raw prompt below.**  
