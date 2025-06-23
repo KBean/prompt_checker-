@@ -18,11 +18,11 @@ st.title("🔍 AI Coach Prompt Highlighter — Clean & Fixed Width")
 
 st.markdown("""
 **Paste your raw prompt below.**  
-This tool keeps your prompt input area neat and narrow, shows inline highlights below,  
-and keeps the Index aligned to the right.
+When you click **Highlight Prompt**, the input will be replaced with your highlighted version — using categories:
+Role & Goal, Steps, Pedagogy, Constraints, Personalization.
 """)
 
-# === Add custom CSS for fixed width ===
+# === Custom CSS for fixed width ===
 st.markdown("""
     <style>
     .prompt-container {
@@ -38,58 +38,77 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === Columns for layout ===
+# === Session state to store whether user clicked Highlight ===
+if "show_highlight" not in st.session_state:
+    st.session_state.show_highlight = False
+
+# === Layout ===
 left, right = st.columns([2, 1])
 
 with left:
     st.markdown('<div class="prompt-container">', unsafe_allow_html=True)
 
-    prompt = st.text_area(
-        "📋 Paste your prompt here:",
-        height=150,
-        placeholder="e.g. Please help me write a PPT as a marketing leader",
-    )
+    if not st.session_state.show_highlight:
+        prompt = st.text_area(
+            "📋 Paste your prompt here:",
+            height=150,
+            placeholder="e.g. Please help me write a PPT as a marketing leader",
+            key="prompt_input"
+        )
 
-    if st.button("✨ Highlight Prompt"):
-        with st.spinner("Analyzing..."):
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are a prompt highlighter. Break the prompt into sentences or phrases. "
-                            "Tag each as: Role & Goal, Steps, Pedagogy, Constraints, Personalization. "
-                            "Output ONLY valid JSON array using double quotes. Example: "
-                            "[{\"text\": \"...\", \"label\": \"...\"}]."
-                        )
-                    },
-                    {"role": "user", "content": prompt}
-                ]
-            )
+        if st.button("✨ Highlight Prompt"):
+            with st.spinner("Analyzing..."):
+                response = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a prompt highlighter. Break any prompt into phrases or sentences. "
+                                "Tag each with: Role & Goal, Steps, Pedagogy, Constraints, Personalization. "
+                                "If the prompt is unclear, return: [{\"text\":\"Prompt unclear.\", \"label\":\"Uncategorized\"}]. "
+                                "Always return only valid JSON array with double quotes."
+                            )
+                        },
+                        {"role": "user", "content": prompt}
+                    ]
+                )
 
-            raw = response.choices[0].message.content.strip()
-            if "```" in raw:
-                raw = raw.split("```")[1].strip()
-                if raw.lower().startswith("json"):
-                    raw = raw.split("\n", 1)[1]
+                raw = response.choices[0].message.content.strip()
+                if "```" in raw:
+                    raw = raw.split("```")[1].strip()
+                    if raw.lower().startswith("json"):
+                        raw = raw.split("\n", 1)[1]
 
-            try:
-                tagged = json.loads(raw)
-            except Exception as e:
-                st.error(f"⚠️ Couldn't parse JSON. Raw:\n\n{raw}\n\nError: {e}")
-                st.stop()
+                if not raw.startswith("[") or not raw.endswith("]"):
+                    st.error(f"⚠️ The AI did not return valid JSON. Please refine your prompt.\n\nRaw output:\n\n{raw}")
+                    st.stop()
 
-            st.markdown('<div class="highlighted-output">', unsafe_allow_html=True)
-            html = ""
-            for item in tagged:
-                text = item['text']
-                label = item['label']
-                color = colors.get(label, "#ddd")
-                html += f'<span style="background-color:{color}; padding:2px 4px; border-radius:4px; margin:1px; color:white;">{text} </span>'
-            st.markdown("### ✅ Highlighted Prompt")
-            st.markdown(html, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                try:
+                    tagged = json.loads(raw)
+                except Exception as e:
+                    st.error(f"⚠️ Couldn't parse JSON. Raw output:\n\n{raw}\n\nError: {e}")
+                    st.stop()
+
+                st.session_state.highlighted = tagged
+                st.session_state.show_highlight = True
+
+    else:
+        # Show the highlighted version in place of input
+        st.markdown('<div class="highlighted-output">', unsafe_allow_html=True)
+        html = ""
+        for item in st.session_state.highlighted:
+            text = item['text']
+            label = item['label']
+            color = colors.get(label, "#ddd")
+            html += f'<span style="background-color:{color}; padding:2px 4px; border-radius:4px; margin:1px; color:white;">{text} </span>'
+        st.markdown(html, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # Optionally allow reset:
+        if st.button("🔄 Start Over"):
+            st.session_state.show_highlight = False
+            st.session_state.prompt_input = ""
 
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -101,12 +120,10 @@ with right:
             unsafe_allow_html=True
         )
 
-# === Bottom Explanation Box ===
-# === Bottom Explanation Box with pastel background and equal size ===
+# === Bottom Explanation Box with pastel and equal size ===
 st.markdown("---")
 st.subheader("📚 What Each Category Means (with Examples)")
 
-# Define pastel colors for readability
 pastel_colors = {
     "Role & Goal": "#f7c4c4",
     "Steps": "#c4d7f7",
@@ -115,22 +132,19 @@ pastel_colors = {
     "Personalization": "#f1efc4"
 }
 
-# Use columns
-col1, col2, col3, col4, col5 = st.columns(5)
-
 box_style = """
     padding: 16px;
     border-radius: 8px;
     color: #000;
     width: 100%;
-    height: 250px;  /* fixed height instead of min-height */
+    height: 250px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     overflow-wrap: break-word;
 """
 
-
+col1, col2, col3, col4, col5 = st.columns(5)
 
 col1.markdown(
     f"""
